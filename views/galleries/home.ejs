@@ -1,13 +1,34 @@
-<h1>Galleries Page</h1>
+<% include ../partials/header %>
+<div class='container'>
+    <header class='jumbotron'>
+        <div class='container'>
+            <h1>Galleries</h1>
+            <p>
+                <a class='btn btn-primary btn-lg' href='/galleries/new'>Add New Gallery</a>
+            </p>
+        </div>
+    </header>
+</div>
 
-<% galleries.forEach(function(gallery){ %>
-	<li>
-		<a href='/galleries/<%= gallery._id %>'>
-			<%= gallery.title %>
-		</a>
-	</li>
-<% }) %>
+<div class='container'>
+    <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
+        <% galleries.forEach( function(gallery) { %>
+        <div class='col-md-3 col-sm-6'>
+			<div class='thumbnail'>
+				<a href='/galleries/<%= gallery._id %>'>
+				<% if (gallery.photos && gallery.photos.length > 0) { %>
+					<img src="<%= gallery.photos[0].image %>" >
+				<% } else { %>
+					<span class="oi oi-plus"></span>
+				<% } %>
+				<div class='caption'>       
+					<h4><%= gallery.title %></h4>
+				</div>
+				</a>
+			</div>
+        </div>
+        <% }) %>
+    </div>
+</div>  
 
-<a href='/'>Go to landing page</a>
-<a href='/galleries/new'>Create new gallery</a>
-<a href='/galleries/gallID'>View gallery</a>
+<% include ../partials/footer %>

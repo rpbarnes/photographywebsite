@@ -1,13 +1,33 @@
-<h1>Gallery Page</h1>
+<% include ../partials/header %>
 
-<a href='/galleries'>Go to galleries page</a>
-<a href='/galleries/<%= gallery._id %>/photos/new'>add new photo</a>
+<div class='container'>
+    <header class='jumbotron'>
+        <div class='container'>
+            <h1><%= gallery.title %></h1>
+            <p>
+                <a class='btn btn-primary btn-lg' href='/galleries/<%= gallery._id %>/photos/new'>Add New Photos</a>
+            </p>
+        </div>
+    </header>
+</div>
 
-<% gallery.photos.forEach(function(photo){ %>
-	<li>
-		<a href='/galleries/<%= gallery._id %>/photos/<%= photo._id %>'>
-			<img src='<%= photo.image %>'/>
-			<p><%= photo.name %></p>
-		</a>
-	</li>
-<% }) %>
+<div class='container'>
+    <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
+        <% gallery.photos.forEach( function(photo) { %>
+        <div class='col-md-3 col-sm-6'>
+			<div class='thumbnail'>
+				<a href='/galleries/<%= gallery._id %>/photos/<%= photo._id %>'>
+				<img src="<%= photo.image %>" >
+			
+				<div class='caption'>       
+					<h4><%= photo.name %></h4>
+				</div>
+				</a>
+			</div>
+        </div>
+        <% }) %>
+    </div>
+</div>  
+
+
+<% include ../partials/footer %>

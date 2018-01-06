@@ -1,5 +1,31 @@
+<% include ../partials/header %>
 <h1>Photo Page</h1>
 
 <a href='/galleries/<%= galleryId %>'>Gallery</a>
 
-<img src='<%= photo.image %>'/>
+<div class='container'>
+<div class='col-md-9'>
+	<div class='thumbnail'>
+		<img class='img-responsive' src="<%= photo.image %>">
+		<div class='caption-full'>
+			<h4><a><%= photo.name %></a></h4>
+			<p><%= photo.descript %></p>
+			<a href='/galleries/<%= galleryId %>/photos/<%= photo._id %>/edit' class='btn btn-warning btn-large'>Edit</a>
+			<form class='deleteForm' action='/galleries/<%= galleryId %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
+				<button class='btn btn-danger'>Delete</button>
+			</form>
+		</div>
+	</div>
+	<div class='well'>
+		<div class='text-right'>
+			<a href='#' class='btn btn-success'>New Comment</a>
+		</div>
+		<hr>
+	</div>
+</div>
+</div>                
+                    
+                    
+
+
+<% include ../partials/footer %>

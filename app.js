@@ -8,6 +8,7 @@ var Gallery 		= require('./models/gallery');
 var app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(__dirname + '/public')); // tell app to point towards public directory
 
 // setup db
 mongoose.connect("mongodb://localhost/photoV1");
@@ -19,10 +20,11 @@ app.get('/',function(req,res){
 
 // home page 
 app.get('/galleries', function(req, res){
-	Gallery.find({}, function(err, galleries){
+	Gallery.find({}).populate('photos').exec(function(err, galleries){
 		if (err) {
 			console.error(String(err));
 		} else {
+			console.log(galleries[0].photos[0]);
 			res.render('./galleries/home',{galleries: galleries});			
 		}
 	});
@@ -35,7 +37,6 @@ app.get('/galleries/new', function(req, res){
 
 // create gallery
 app.post('/galleries', function(req, res){
-	console.log('submitted')
 	Gallery.create(req.body.gallery, function(err, gallery){
 		if (err) {
 			console.error(String(err));
@@ -107,6 +108,13 @@ app.post('/galleries/:gallID/photos', function(req, res){
 app.get('/galleries/:gallID/photos/:photoId', function(req, res){
 	Photo.findById(req.params.photoId, function(err, photo){
 		res.render('./photos/show', {photo: photo, galleryId: req.params.gallID});	
+	});
+});
+
+// edit photo (name, description, photo)
+app.get('/galleries/:gallID/photos/:photoId/edit', function(req, res){
+	Photo.findById(req.params.photoId, function(err, photo){
+		res.render('./photos/edit', {photo: photo});
 	});
 });
 
