@@ -1,0 +1,13 @@
+<h1>Gallery Page</h1>
+
+<a href='/galleries'>Go to galleries page</a>
+<a href='/galleries/<%= gallery._id %>/photos/new'>add new photo</a>
+
+<% gallery.photos.forEach(function(photo){ %>
+	<li>
+		<a href='/galleries/<%= gallery._id %>/photos/<%= photo._id %>'>
+			<img src='<%= photo.image %>'/>
+			<p><%= photo.name %></p>
+		</a>
+	</li>
+<% }) %>

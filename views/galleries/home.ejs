@@ -1,0 +1,13 @@
+<h1>Galleries Page</h1>
+
+<% galleries.forEach(function(gallery){ %>
+	<li>
+		<a href='/galleries/<%= gallery._id %>'>
+			<%= gallery.title %>
+		</a>
+	</li>
+<% }) %>
+
+<a href='/'>Go to landing page</a>
+<a href='/galleries/new'>Create new gallery</a>
+<a href='/galleries/gallID'>View gallery</a>

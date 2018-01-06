@@ -1,0 +1,9 @@
+<h1>New Photo Page</h1>
+
+<a href='/galleries/<%= gallery._id %>'>Go to gallery</a>
+
+<form action='/galleries/<%= gallery._id %>/photos' method='POST'>
+	<input type='text' name='photo[name]' placeholder='Name'>
+	<input type='text' name='photo[image]' placeholder='Image URL'>
+	<input type='submit'>
+</form>

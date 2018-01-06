@@ -1,0 +1,17 @@
+{
+  "name": "photography_site",
+  "version": "1.0.0",
+  "description": "This is a site for my photography",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "author": "Ryan Barnes",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.0-rc2"
+  }
+}
