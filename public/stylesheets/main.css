@@ -1,3 +1,12 @@
 .deleteForm {
 	display: inline;
 }
+
+h1.addNew {
+	text-align: center;
+}
+
+div.addNew {
+	width: 30%; 
+	margin: 30px auto;
+}
