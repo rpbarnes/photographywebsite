@@ -40,16 +40,11 @@ app.get('/',function(req,res){
 
 // home page 
 app.get('/galleries', function(req, res){
+	// you need to populate galleries and this is not working. You're also going to need to load in a photo of each.
 	Gallery.find({}, function(err, galleries){
 		if (err) {
 			console.error(String(err));
 		} else {
-			console.log(galleries);
-			galleries.forEach(function(gallery){
-				gallery.populate('photos');
-			});
-			console.log('after individual populate');
-			console.log(galleries);
 			res.render('./galleries/home',{galleries: galleries});			
 		}
 	});
@@ -83,7 +78,7 @@ app.get('/galleries/:gallID', function(req, res){
 		} else {
 			var fullPhotos = [];
 			gallery.photos.forEach(function(photo, index, array) {
-				Jimp.read(photo.image, function(err, image) { // change to thumbnail once you make thumbnail
+				Jimp.read(photo.thumbnail, function(err, image) { // change to thumbnail once you make thumbnail
 					image.getBase64(image.getMIME(), function(err, image64){
 						fullPhotos.push({img: image64, id: photo._id, name: photo.name})
 						if (index === (array.length - 1)) { // this is not the best way to do this...
@@ -124,6 +119,13 @@ app.post('/galleries/:gallID/photos', upload.single('thumbnail'), function(req, 
 					console.error(String(err));
 				} else {
 					photo.image = req.file.path;// convert to thumbnail. 
+					var name = destinationFile + '/' + req.file.fieldname + '-small-' + Date.now() + path.extname(req.file.originalname);
+					Jimp.read(req.file.path, function(err, image){
+						image.cover(256,256);						
+						image.write(name)
+						console.log('image saved');
+					});
+					photo.thumbnail = name;
 					photo.save();
 					gallery.photos.push(photo._id);
 					gallery.save();
@@ -137,7 +139,19 @@ app.post('/galleries/:gallID/photos', upload.single('thumbnail'), function(req, 
 // show photo
 app.get('/galleries/:gallID/photos/:photoId', function(req, res){
 	Photo.findById(req.params.photoId, function(err, photo){
-		res.render('./photos/show', {photo: photo, galleryId: req.params.gallID});	
+		Jimp.read(photo.image, function(err, image) {
+			if (err) {
+				console.error(String(err))
+			} else {
+				image.getBase64(image.getMIME(), function(err, image64) {
+					if (err) {
+						console.error(String(err))
+					} else {
+						res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image64});	
+					}
+				});
+			}
+		});
 	});
 });
 
