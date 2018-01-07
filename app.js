@@ -108,8 +108,8 @@ app.get('/galleries/:gallID/photos/new', function(req, res){
 	});	
 });
 
-// create photo
-app.post('/galleries/:gallID/photos', upload.single('thumbnail'), function(req, res){
+// create photo because of DZ you don't want to redirect here because this will be called on each photo added...
+app.post('/galleries/:gallID/photos', upload.single('file'), function(req, res){
 	Gallery.findById(req.params.gallID, function(err, gallery){
 		if (err) {
 			console.error(String(err));
@@ -129,7 +129,7 @@ app.post('/galleries/:gallID/photos', upload.single('thumbnail'), function(req, 
 					photo.save();
 					gallery.photos.push(photo._id);
 					gallery.save();
-					res.redirect('/galleries/' + req.params.gallID);
+					return res.status( 200 ).send( req.file ); // this is what dz expects if the upload works.
 				}
 			});
 		}
