@@ -1,8 +1,13 @@
-var express 		= require('express');
-var mongoose 		= require('mongoose');
-var bodyParser		= require('body-parser')
-var Photo 			= require('./models/photo');
-var Gallery 		= require('./models/gallery');
+var express 		= require('express'),
+ 	mongoose 		= require('mongoose'),
+ 	bodyParser		= require('body-parser'),
+ 	multer    		= require( 'multer' ),
+ 	sizeOf    		= require( 'image-size' ),
+    path            = require('path'),
+	Jimp			= require('jimp'),
+ 	Photo 			= require('./models/photo'),
+ 	Gallery 		= require('./models/gallery');
+require( 'string.prototype.startswith' );
 
 // define app
 var app = express();
@@ -10,8 +15,23 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/public')); // tell app to point towards public directory
 
+// Setup storage properties for multer and define upload
+var destinationFile = './uploads';
+var storage = multer.diskStorage({
+    destination: function(req, file, callback){
+        callback(null, destinationFile);
+    },
+    filename: function(req, file, callback){
+        var name = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        callback(null, name);
+    }
+});
+var upload = multer({
+	storage: storage,
+})
+
 // setup db
-mongoose.connect("mongodb://localhost/photoV1");
+mongoose.connect("mongodb://localhost/photoV2");
 
 // landing page
 app.get('/',function(req,res){
@@ -20,11 +40,16 @@ app.get('/',function(req,res){
 
 // home page 
 app.get('/galleries', function(req, res){
-	Gallery.find({}).populate('photos').exec(function(err, galleries){
+	Gallery.find({}, function(err, galleries){
 		if (err) {
 			console.error(String(err));
 		} else {
-			console.log(galleries[0].photos[0]);
+			console.log(galleries);
+			galleries.forEach(function(gallery){
+				gallery.populate('photos');
+			});
+			console.log('after individual populate');
+			console.log(galleries);
 			res.render('./galleries/home',{galleries: galleries});			
 		}
 	});
@@ -32,10 +57,11 @@ app.get('/galleries', function(req, res){
 
 // new gallery 
 app.get('/galleries/new', function(req, res){
-	res.render('./galleries/new');
+	res.render('./galleries/new'); 
 });
 
-// create gallery
+// create gallery - when adding photos you can use findByIdAndUpdate to create a gallery if it doesn't already exist. 
+// You'll have to do this to work with dropzone
 app.post('/galleries', function(req, res){
 	Gallery.create(req.body.gallery, function(err, gallery){
 		if (err) {
@@ -55,7 +81,17 @@ app.get('/galleries/:gallID', function(req, res){
 			console.error(String(err));
 			res.redirect('/');
 		} else {
-			res.render('./galleries/show', {gallery: gallery});
+			var fullPhotos = [];
+			gallery.photos.forEach(function(photo, index, array) {
+				Jimp.read(photo.image, function(err, image) { // change to thumbnail once you make thumbnail
+					image.getBase64(image.getMIME(), function(err, image64){
+						fullPhotos.push({img: image64, id: photo._id, name: photo.name})
+						if (index === (array.length - 1)) { // this is not the best way to do this...
+							res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
+						}
+					});
+				});
+			});
 		}
 	});
 });
@@ -78,7 +114,7 @@ app.get('/galleries/:gallID/photos/new', function(req, res){
 });
 
 // create photo
-app.post('/galleries/:gallID/photos', function(req, res){
+app.post('/galleries/:gallID/photos', upload.single('thumbnail'), function(req, res){
 	Gallery.findById(req.params.gallID, function(err, gallery){
 		if (err) {
 			console.error(String(err));
@@ -87,17 +123,11 @@ app.post('/galleries/:gallID/photos', function(req, res){
 				if (err) {
 					console.error(String(err));
 				} else {
-					console.log(gallery);
+					photo.image = req.file.path;// convert to thumbnail. 
+					photo.save();
 					gallery.photos.push(photo._id);
-					gallery.save(function(err, saved){
-						if (err) {
-							console.log(err);
-						} else {
-							console.log(saved);
-							res.redirect('/galleries/' + req.params.gallID);
-						}
-					});
-					// res.redirect('/galleries/' + req.params.gallID);
+					gallery.save();
+					res.redirect('/galleries/' + req.params.gallID);
 				}
 			});
 		}

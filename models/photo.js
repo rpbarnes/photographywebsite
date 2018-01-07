@@ -3,7 +3,9 @@ var mongoose = require('mongoose');
 var photoSchema = mongoose.Schema({
 	image: {	// this is in place of an actual file held on S3		
 		type: String,
-		default: 'https://static.pexels.com/photos/169677/pexels-photo-169677.jpeg'
+	},
+	thumbnail: { // filename placeholder for thumbnail file
+		type: String,
 	},
 	name: {
 		type: String,
