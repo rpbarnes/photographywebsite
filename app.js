@@ -5,8 +5,10 @@ var express 		= require('express'),
  	sizeOf    		= require( 'image-size' ),
     path            = require('path'),
 	Jimp			= require('jimp'),
+	fs 				= require('fs'),
  	Photo 			= require('./models/photo'),
  	Gallery 		= require('./models/gallery');
+
 require( 'string.prototype.startswith' );
 
 // define app
@@ -158,19 +160,26 @@ app.post('/galleries/:gallID/photos', upload.any(), function(req, res){
 // show photo
 app.get('/galleries/:gallID/photos/:photoId', function(req, res){
 	Photo.findById(req.params.photoId, function(err, photo){
-		Jimp.read(photo.image, function(err, image) {
+		fs.readFile(photo.image, function(err, file) {
 			if (err) {
-				console.error(String(err))
+				console.log(error);
 			} else {
-				image.getBase64(image.getMIME(), function(err, image64) {
-					if (err) {
-						console.error(String(err))
-					} else {
-						res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image64});	
-					}
-				});
+				res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')});	
 			}
 		});
+		// Jimp.read(photo.image, function(err, image) {
+		// 	if (err) {
+		// 		console.error(String(err))
+		// 	} else {
+		// 		image.getBase64(image.getMIME(), function(err, image64) {
+		// 			if (err) {
+		// 				console.error(String(err))
+		// 			} else {
+		// 				res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image64});	
+		// 			}
+		// 		});
+		// 	}
+		// });
 	});
 });
 
