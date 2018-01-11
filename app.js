@@ -81,16 +81,10 @@ app.get('/galleries/:gallID', function(req, res){
 			var fullPhotos = [];
 			if (gallery.photos.length > 0) {
 				gallery.photos.forEach(function(photo, index, array) {
-					Jimp.read(photo.thumbnail, function(err, image) { // change to thumbnail once you make thumbnail
-						if (err || !image) {
-							console.log('something went wrong');
-						} else {
-							image.getBase64(image.getMIME(), function(err, image64){
-								fullPhotos.push({img: image64, id: photo._id, name: photo.name})
-								if (index === (array.length - 1)) { // this is not the best way to do this...
-									return res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
-								}
-							});
+					fs.readFile(photo.thumbnail, function(err, file) {
+						fullPhotos.push({img:'data:image/jpeg;base64,' + Buffer.from(file).toString('base64'), id: photo._id, name: photo.name});
+						if (index === (array.length - 1)) { // this is not the best way to do this...
+							return res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
 						}
 					});
 				});
@@ -160,26 +154,18 @@ app.post('/galleries/:gallID/photos', upload.any(), function(req, res){
 // show photo
 app.get('/galleries/:gallID/photos/:photoId', function(req, res){
 	Photo.findById(req.params.photoId, function(err, photo){
-		fs.readFile(photo.image, function(err, file) {
-			if (err) {
-				console.log(error);
-			} else {
-				res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')});	
-			}
-		});
-		// Jimp.read(photo.image, function(err, image) {
-		// 	if (err) {
-		// 		console.error(String(err))
-		// 	} else {
-		// 		image.getBase64(image.getMIME(), function(err, image64) {
-		// 			if (err) {
-		// 				console.error(String(err))
-		// 			} else {
-		// 				res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image64});	
-		// 			}
-		// 		});
-		// 	}
-		// });
+		if (err || !photo) {
+			res.redirect('/galleries/'+req.params.gallID);
+		} else {
+			fs.readFile(photo.image, function(err, file) {
+				if (err) {
+					console.log(error);
+				} else {
+					var image = 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')
+					res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image});	
+				}
+			});
+		}
 	});
 });
 
