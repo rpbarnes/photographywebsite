@@ -14,21 +14,22 @@
     <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
         <% galleries.forEach( function(gallery) { %>
         <div class='col-md-3 col-sm-6'>
-			<div class='thumbnail'>
-				<a href='/galleries/<%= gallery._id %>'>
-				<% if (gallery.photos && gallery.photos.length > 0) { %>
-					<img src="<%= gallery.photos[0].image %>" >
-				<% } else { %>
-					<span class="oi oi-plus"></span>
-				<% } %>
-				<div class='caption'>       
-					<h4><%= gallery.title %></h4>
-				</div>
-				</a>
-			</div>
+            <div class='thumbnail'>
+                <a href='/galleries/<%= gallery.id %>'>
+                <% if (gallery.img) { %>
+                    <img id='<%= gallery.img %>' >
+                <% } else { %>
+                    <span class="oi oi-plus"></span>
+                <% } %>
+                <div class='caption'>       
+                    <h4><%= gallery.title %></h4>
+                </div>
+                </a>
+            </div>
         </div>
         <% }) %>
     </div>
 </div>  
+<script src="/js/main.js"></script>
 
 <% include ../partials/footer %>

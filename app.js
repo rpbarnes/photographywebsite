@@ -47,7 +47,18 @@ app.get('/galleries', function(req, res){
 		if (err) {
 			console.error(String(err));
 		} else {
-			res.render('./galleries/home',{galleries: galleries});			
+			thumbnails = [];
+			galleries.forEach(function(gallery, index, array){
+				if (gallery.photos && (gallery.photos.length > 0)) {
+					thumbnails.push({img:gallery.photos[0], id: gallery._id, title: gallery.title});
+				} else {
+					thumbnails.push({id: gallery._id, title: gallery.title});
+				}
+				if (index === (array.length - 1)) { // this is not the best way to do this...
+					res.render('./galleries/home',{galleries: thumbnails});			
+				}
+
+			});
 		}
 	});
 });
@@ -181,6 +192,19 @@ app.get('/galleries/:gallID/photos/:photoId/edit', function(req, res){
 
 // destroy photo
 // app.delete
+
+// ajax requests for thumbnail 
+app.get('/thumbnail/:thumbId', function(req, res) {
+	Photo.findById(req.params.thumbId, function(err, photo) {
+		if (err || !photo) {
+			console.log('break ajax req');
+		} else {
+			fs.readFile(photo.thumbnail, function(err, file) {
+				res.send('data:image/jpeg;base64,'+Buffer.from(file).toString('base64'));				
+			});
+		}
+	});
+});
 
 
 app.listen(process.env.PORT, process.env.IP, function(){
