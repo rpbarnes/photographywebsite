@@ -22,7 +22,7 @@ var storage = multer.diskStorage({
         callback(null, destinationFile);
     },
     filename: function(req, file, callback){
-        var name = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        var name = path.basename(file.originalname) + '-' + Date.now() + path.extname(file.originalname);
         callback(null, name);
     }
 });
@@ -77,16 +77,24 @@ app.get('/galleries/:gallID', function(req, res){
 			res.redirect('/');
 		} else {
 			var fullPhotos = [];
-			gallery.photos.forEach(function(photo, index, array) {
-				Jimp.read(photo.thumbnail, function(err, image) { // change to thumbnail once you make thumbnail
-					image.getBase64(image.getMIME(), function(err, image64){
-						fullPhotos.push({img: image64, id: photo._id, name: photo.name})
-						if (index === (array.length - 1)) { // this is not the best way to do this...
-							res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
+			if (gallery.photos.length > 0) {
+				gallery.photos.forEach(function(photo, index, array) {
+					Jimp.read(photo.thumbnail, function(err, image) { // change to thumbnail once you make thumbnail
+						if (err || !image) {
+							console.log('something went wrong');
+						} else {
+							image.getBase64(image.getMIME(), function(err, image64){
+								fullPhotos.push({img: image64, id: photo._id, name: photo.name})
+								if (index === (array.length - 1)) { // this is not the best way to do this...
+									return res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
+								}
+							});
 						}
 					});
 				});
-			});
+			} else {
+				res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
+			}
 		}
 	});
 });
@@ -109,28 +117,39 @@ app.get('/galleries/:gallID/photos/new', function(req, res){
 });
 
 // create photo because of DZ you don't want to redirect here because this will be called on each photo added...
-app.post('/galleries/:gallID/photos', upload.single('file'), function(req, res){
+app.post('/galleries/:gallID/photos', upload.any(), function(req, res){
+	console.log(req.files);
 	Gallery.findById(req.params.gallID, function(err, gallery){
 		if (err) {
 			console.error(String(err));
 		} else {
-			Photo.create(req.body.photo, function(err, photo){
-				if (err) {
-					console.error(String(err));
-				} else {
-					photo.image = req.file.path;// convert to thumbnail. 
-					var name = destinationFile + '/' + req.file.fieldname + '-small-' + Date.now() + path.extname(req.file.originalname);
-					Jimp.read(req.file.path, function(err, image){
-						image.cover(256,256);						
-						image.write(name)
-						console.log('image saved');
-					});
-					photo.thumbnail = name;
-					photo.save();
-					gallery.photos.push(photo._id);
-					gallery.save();
-					return res.status( 200 ).send( req.file ); // this is what dz expects if the upload works.
-				}
+			req.files.forEach(function(photoObj, index, array) {
+				Photo.create({}, function(err, photo){
+					if (err) {
+						console.error(String(err));
+					} else {
+						console.log(photoObj);
+						photo.name = path.basename(photoObj.originalname);
+						photo.image = photoObj.path;// convert to thumbnail. 
+						var name = destinationFile + '/' + path.basename(photoObj.originalname) + '-small-' + Date.now() + path.extname(photoObj.originalname);
+						Jimp.read(photoObj.path, function(err, image){
+							image.cover(256,256);						
+							image.write(name, function(err, saved){
+								if (index === (array.length - 1)) {
+									res.status(200).end();
+									console.log('all done');
+								}
+							});
+							console.log('image saved');
+						});
+						photo.thumbnail = name;
+						photo.save();
+						gallery.photos.push(photo._id);
+						if (index === (array.length - 1)) {
+							gallery.save();
+						}
+					}
+				});
 			});
 		}
 	});

@@ -3,14 +3,18 @@
 <div class='container'>
     <div class='row'>
 		<h1 class='addNew'>Add new photos</h1>
-		<form class='dropzone' id="upload-widget" enctype="multipart/form-data" action='/galleries/<%= gallery._id %>/photos' method='POST'>
-			<div class='fallback'>
-				<input type='file' name='file' />
-			</div>
+		<form class='dropzone' id='upload-widget' enctype="multipart/form-data" action='/galleries/<%= gallery._id %>/photos' method='POST'>
+			<div class='dropzone-previews'></div>
+		<button type='submit' class='btn btn-primary'>Upload</button>
+		<a href='/galleries/<%= gallery._id %>' class='btn btn-danger'>Done</a>
 		</form>
 	</div>
-	<a id='submit' href='/galleries/<%= gallery._id %>' class="btn btn-primary">Done</a>
 </div>
+<form enctype="multipart/form-data" action='/galleries/<%= gallery._id %>/photos' method='POST'>
+<input type='file' name='file' multiple>
+<input type='submit'>
+</form>
 <script src="/js/dropzone.js"></script>
+<script src="/js/myDz.js"></script>
 
 <% include ../partials/footer %>
