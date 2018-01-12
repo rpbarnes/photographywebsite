@@ -84,25 +84,8 @@ app.post('/galleries', function(req, res){
 
 // show gallery
 app.get('/galleries/:gallID', function(req, res){
-	Gallery.findById(req.params.gallID).populate('photos').exec(function(err, gallery){
-		if (err || !gallery) {
-			console.error(String(err));
-			res.redirect('/');
-		} else {
-			var fullPhotos = [];
-			if (gallery.photos.length > 0) {
-				gallery.photos.forEach(function(photo, index, array) {
-					fs.readFile(photo.thumbnail, function(err, file) {
-						fullPhotos.push({img:'data:image/jpeg;base64,' + Buffer.from(file).toString('base64'), id: photo._id, name: photo.name});
-						if (index === (array.length - 1)) { // this is not the best way to do this...
-							return res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
-						}
-					});
-				});
-			} else {
-				res.render('./galleries/show', {gallery: gallery, fullPhotos: fullPhotos});
-			}
-		}
+	Gallery.findById(req.params.gallID, function(err, gallery){
+		res.render('./galleries/show', {gallery: gallery});
 	});
 });
 
@@ -168,14 +151,15 @@ app.get('/galleries/:gallID/photos/:photoId', function(req, res){
 		if (err || !photo) {
 			res.redirect('/galleries/'+req.params.gallID);
 		} else {
-			fs.readFile(photo.image, function(err, file) {
-				if (err) {
-					console.log(error);
-				} else {
-					var image = 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')
-					res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image});	
-				}
-			});
+			res.render('./photos/show', {photo: photo, galleryId: req.params.gallID});	
+			// fs.readFile(photo.image, function(err, file) {
+			// 	if (err) {
+			// 		console.log(error);
+			// 	} else {
+			// 		var image = 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')
+			// 		res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image});	
+			// 	}
+			// });
 		}
 	});
 });
@@ -193,13 +177,18 @@ app.get('/galleries/:gallID/photos/:photoId/edit', function(req, res){
 // destroy photo
 // app.delete
 
-// ajax requests for thumbnail 
-app.get('/thumbnail/:thumbId', function(req, res) {
-	Photo.findById(req.params.thumbId, function(err, photo) {
+// ajax requests for photo 
+app.get('/:photoType/:photoId', function(req, res) {
+	Photo.findById(req.params.photoId, function(err, photo) {
 		if (err || !photo) {
-			console.log('break ajax req');
+			res.status(400).send('photo not found');
 		} else {
-			fs.readFile(photo.thumbnail, function(err, file) {
+			if (req.params.photoType === 'thumbnail') {
+				var fileName = photo.thumbnail;
+			} else if (req.params.photoType === 'image') {
+				var fileName = photo.image;
+			}
+			fs.readFile(fileName, function(err, file) {
 				res.send('data:image/jpeg;base64,'+Buffer.from(file).toString('base64'));				
 			});
 		}

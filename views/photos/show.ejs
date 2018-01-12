@@ -6,7 +6,7 @@
 <div class='container'>
 <div class='col-md-9'>
 	<div class='thumbnail'>
-		<img class='img-responsive' src="<%= image64 %>">
+		<img class='img-responsive' id='<%= photo._id %>'>
 		<div class='caption-full'>
 			<h4><a><%= photo.name %></a></h4>
 			<p><%= photo.descript %></p>
@@ -26,6 +26,7 @@
 </div>                
                     
                     
+<script src="/js/loadShowPage.js"></script>
 
 
 <% include ../partials/footer %>

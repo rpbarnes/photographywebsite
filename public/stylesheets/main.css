@@ -10,3 +10,7 @@ div.addNew {
 	width: 30%; 
 	margin: 30px auto;
 }
+
+#imageContainer {
+	cursor: pointer;
+}
