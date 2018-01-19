@@ -16,8 +16,8 @@
         <div class='col-md-3 col-sm-6'>
             <div class='thumbnail'>
                 <a href='/galleries/<%= gallery.id %>'>
-                <% if (gallery.img) { %>
-                    <img id='<%= gallery.img %>' >
+                <% if (gallery.photos) { %>
+                    <img id='<%= gallery.photos[0]._id %>' src='<%= gallery.photos[0].image %>' >
                 <% } else { %>
                     <span class="oi oi-plus"></span>
                 <% } %>
@@ -30,6 +30,5 @@
         <% }) %>
     </div>
 </div>  
-<script src="/js/loadImages.js"></script>
 
 <% include ../partials/footer %>

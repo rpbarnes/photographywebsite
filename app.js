@@ -1,39 +1,85 @@
 var express 		= require('express'),
  	mongoose 		= require('mongoose'),
+    methodOverride  = require('method-override'),
  	bodyParser		= require('body-parser'),
  	multer    		= require( 'multer' ),
+ 	multerS3  		= require( 'multer-s3' ),
+	aws				= require('aws-sdk'),
  	sizeOf    		= require( 'image-size' ),
     path            = require('path'),
-	Jimp			= require('jimp'),
-	fs 				= require('fs'),
  	Photo 			= require('./models/photo'),
  	Gallery 		= require('./models/gallery');
 
 require( 'string.prototype.startswith' );
+
+storePhotos = function(req, res, next) {
+	Gallery.findById(req.params.gallID, function(err, gallery){
+		if (err) {
+			console.error(String(err));
+		} else {
+			req.files.forEach(function(photoObj, index, array) {
+				Photo.create({}, function(err, photo){
+					if (err) {
+						console.error(String(err));
+					} else {
+						console.log(photoObj);
+						photo.name = path.basename(photoObj.originalname);
+						photo.image = photoObj.location;
+						photo.key = photoObj.key;
+						photo.save();
+						gallery.photos.push(photo._id);
+						if (index === (array.length - 1)) {
+							gallery.save();
+							res.status(200).end();
+							console.log('all done');
+						}
+					}
+				});
+			});
+		}
+	});
+	next();
+}
 
 // define app
 var app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/public')); // tell app to point towards public directory
+app.use(methodOverride("_method"));
 
 // Setup storage properties for multer and define upload
+var s3 = new aws.S3();
+var bucketName = 'ryanbarnesphotographywebsite';
+var toDelete = {Bucket: bucketName, Key: ''};
+
 var destinationFile = './uploads';
-var storage = multer.diskStorage({
-    destination: function(req, file, callback){
-        callback(null, destinationFile);
-    },
-    filename: function(req, file, callback){
-        var name = path.basename(file.originalname) + '-' + Date.now() + path.extname(file.originalname);
-        callback(null, name);
-    }
-});
+// var storage = multer.diskStorage({
+//     destination: function(req, file, callback){
+//         callback(null, destinationFile);
+//     },
+//     filename: function(req, file, callback){
+//         var name = path.basename(file.originalname) + '-' + Date.now() + path.extname(file.originalname);
+//         callback(null, name);
+//     }
+// });
 var upload = multer({
-	storage: storage,
+	storage: multerS3({
+		s3: s3,
+		bucket: bucketName,
+		acl: 'public-read',
+		contentType: multerS3.AUTO_CONTENT_TYPE,
+		metadata: function(req, file, cb){
+			cb(null, {fieldName: file.fieldname});
+		},
+		key: function(req, file, cb){
+			cb(null, Date.now().toString() + '-' + path.basename(file.originalname));
+		}
+	})
 })
 
 // setup db
-mongoose.connect("mongodb://localhost/photoV2");
+mongoose.connect("mongodb://localhost/photoV4");
 
 // landing page
 app.get('/',function(req,res){
@@ -43,22 +89,11 @@ app.get('/',function(req,res){
 // home page 
 app.get('/galleries', function(req, res){
 	// you need to populate galleries and this is not working. You're also going to need to load in a photo of each.
-	Gallery.find({}, function(err, galleries){
+	Gallery.find({}).populate('photos').exec(function(err, galleries){
 		if (err) {
 			console.error(String(err));
 		} else {
-			thumbnails = [];
-			galleries.forEach(function(gallery, index, array){
-				if (gallery.photos && (gallery.photos.length > 0)) {
-					thumbnails.push({img:gallery.photos[0], id: gallery._id, title: gallery.title});
-				} else {
-					thumbnails.push({id: gallery._id, title: gallery.title});
-				}
-				if (index === (array.length - 1)) { // this is not the best way to do this...
-					res.render('./galleries/home',{galleries: thumbnails});			
-				}
-
-			});
+			res.render('./galleries/home',{galleries: galleries});			
 		}
 	});
 });
@@ -84,7 +119,7 @@ app.post('/galleries', function(req, res){
 
 // show gallery
 app.get('/galleries/:gallID', function(req, res){
-	Gallery.findById(req.params.gallID, function(err, gallery){
+	Gallery.findById(req.params.gallID).populate('photos').exec(function(err, gallery){
 		res.render('./galleries/show', {gallery: gallery});
 	});
 });
@@ -106,62 +141,8 @@ app.get('/galleries/:gallID/photos/new', function(req, res){
 	});	
 });
 
-// create photo because of DZ you don't want to redirect here because this will be called on each photo added...
-app.post('/galleries/:gallID/photos', upload.any(), function(req, res){
-	console.log(req.files);
-	Gallery.findById(req.params.gallID, function(err, gallery){
-		if (err) {
-			console.error(String(err));
-		} else {
-			req.files.forEach(function(photoObj, index, array) {
-				Photo.create({}, function(err, photo){
-					if (err) {
-						console.error(String(err));
-					} else {
-						console.log(photoObj);
-						photo.name = path.basename(photoObj.originalname);
-						photo.image = photoObj.path;// convert to thumbnail. 
-						var name = destinationFile + '/' + path.basename(photoObj.originalname) + '-small-' + Date.now() + path.extname(photoObj.originalname);
-						Jimp.read(photoObj.path, function(err, image){
-							image.cover(256,256);						
-							image.write(name, function(err, saved){
-								if (index === (array.length - 1)) {
-									res.status(200).end();
-									console.log('all done');
-								}
-							});
-							console.log('image saved');
-						});
-						photo.thumbnail = name;
-						photo.save();
-						gallery.photos.push(photo._id);
-						if (index === (array.length - 1)) {
-							gallery.save();
-						}
-					}
-				});
-			});
-		}
-	});
-});
-
-// show photo
-app.get('/galleries/:gallID/photos/:photoId', function(req, res){
-	Photo.findById(req.params.photoId, function(err, photo){
-		if (err || !photo) {
-			res.redirect('/galleries/'+req.params.gallID);
-		} else {
-			res.render('./photos/show', {photo: photo, galleryId: req.params.gallID});	
-			// fs.readFile(photo.image, function(err, file) {
-			// 	if (err) {
-			// 		console.log(error);
-			// 	} else {
-			// 		var image = 'data:image/jpeg;base64,' + Buffer.from(file).toString('base64')
-			// 		res.render('./photos/show', {photo: photo, galleryId: req.params.gallID, image64: image});	
-			// 	}
-			// });
-		}
-	});
+app.post('/galleries/:gallID/photos', upload.any(), storePhotos, function(req, res){
+	console.log('photos stored');
 });
 
 // edit photo (name, description, photo)
@@ -175,25 +156,63 @@ app.get('/galleries/:gallID/photos/:photoId/edit', function(req, res){
 // app.put
 
 // destroy photo
-// app.delete
-
-// ajax requests for photo 
-app.get('/:photoType/:photoId', function(req, res) {
-	Photo.findById(req.params.photoId, function(err, photo) {
-		if (err || !photo) {
-			res.status(400).send('photo not found');
-		} else {
-			if (req.params.photoType === 'thumbnail') {
-				var fileName = photo.thumbnail;
-			} else if (req.params.photoType === 'image') {
-				var fileName = photo.image;
+app.delete('/galleries/:gallId/photos/:photoId', function(req, res){
+	// remove photo from Gallery photos array
+	// remove Photo
+	// remove photo from S3 storage
+	Gallery.findById(req.params.gallId, function(err, gallery){
+		if (err || !gallery){
+			res.redirect('/galleries/');
+		}
+		const indexRemove = gallery.photos.indexOf(req.params.photoId);
+		if (indexRemove !== -1) {
+			gallery.photos.splice(indexRemove, 1);
+		}
+		gallery.save(function(err){
+			if (err) {
+				console.error(String(err))
+			} else {
+				res.redirect('/galleries/'+req.params.gallId);
 			}
-			fs.readFile(fileName, function(err, file) {
-				res.send('data:image/jpeg;base64,'+Buffer.from(file).toString('base64'));				
+		});
+	});
+	Photo.findByIdAndRemove(req.params.photoId, function(err, photo) {
+		if (err || !photo) {
+			console.error(String(err));
+		} else {
+			toDelete.Key = photo.key;
+			console.log(toDelete);
+			s3.deleteObject(toDelete, function(err, data){
+				if (err) {
+					console.error(String(err));
+				} else {
+					console.log('photo removed');
+				}
+
 			});
 		}
 	});
 });
+
+// ajax requests for photo 
+// app.get('/:photoType/:photoId', function(req, res) {
+// 	Photo.findById(req.params.photoId, function(err, photo) {
+// 		if (err || !photo) {
+// 			res.status(400).send('photo not found');
+// 		} else {
+// 			if (req.params.photoType === 'thumbnail') {
+// 				var fileName = photo.thumbnail;
+// 			} else if (req.params.photoType === 'image') {
+// 				var fileName = photo.image;
+// 			}
+// 			fs.readFile(fileName, function(err, file) {
+// 				res.send('data:image/jpeg;base64,'+Buffer.from(file).toString('base64'));				
+// 			});
+// 		}
+// 	});
+// });
+//
+
 
 
 app.listen(process.env.PORT, process.env.IP, function(){

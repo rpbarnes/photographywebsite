@@ -7,6 +7,9 @@ var photoSchema = mongoose.Schema({
 	thumbnail: { // filename placeholder for thumbnail file
 		type: String,
 	},
+	key: {
+		type: String,
+	},
 	name: {
 		type: String,
 	}
