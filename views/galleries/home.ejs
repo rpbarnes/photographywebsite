@@ -16,7 +16,7 @@
         <div class='col-md-3 col-sm-6'>
             <div class='thumbnail'>
                 <a href='/galleries/<%= gallery.id %>'>
-                <% if (gallery.photos) { %>
+                <% if (gallery.photos && (gallery.photos.length > 0)) { %>
                     <img id='<%= gallery.photos[0]._id %>' src='<%= gallery.photos[0].image %>' >
                 <% } else { %>
                     <span class="oi oi-plus"></span>

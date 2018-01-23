@@ -1,0 +1,28 @@
+<% include partials/header %>
+
+<div class='container'>
+    <div class='row'>
+		<h1 class='addNew'>Sign Up</h1>
+        <div class='addNew'>
+			<form method='POST' action='/register'>
+				<div class='form-group'>
+					<input type='text' class='form-control' name='firstname' placeholder='First Name' required>
+				</div>
+                <div class='form-group'>
+					<input type='text' class='form-control' name='lastname' placeholder='Last Name' required>
+                </div>    
+                <div class='form-group'>
+					<input type='email' class='form-control' name='username' placeholder='email' required>
+                </div>    
+                <div class='form-group'>
+					<input type='password' class='form-control' name='password' placeholder='password'>
+                </div>    
+                <div class='form-group'>
+					<button class='btn btn-lg btn-primary btn-block' type='submit'>Create</button>
+                </div>    
+			</form>
+		</div>
+	</div>
+</div>
+
+<% include partials/footer %>

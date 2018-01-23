@@ -12,7 +12,16 @@ var photoSchema = mongoose.Schema({
 	},
 	name: {
 		type: String,
-	}
+	},
+    author: {
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        username: {
+            type: String
+        }
+    }
 });
 
 module.exports = mongoose.model('Photo',photoSchema);

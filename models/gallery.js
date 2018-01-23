@@ -8,6 +8,15 @@ var gallerySchema = mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Photo"
 	},
+    author: {
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        username: {
+            type: String
+        }
+    },
 	photos: [
 		{
 			type: mongoose.Schema.Types.ObjectId,
