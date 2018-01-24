@@ -16,16 +16,15 @@
     <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
         <% galleries.forEach( function(gallery) { %>
         <div class='col-md-3 col-sm-6'>
-            <div class='thumbnail'>
+            <div id='imageContainer' class='thumbnail'>
                 <a href='/galleries/<%= gallery.id %>'>
                 <% if (gallery.photos && (gallery.photos.length > 0)) { %>
                     <img id='<%= gallery.photos[0]._id %>' src='<%= gallery.photos[0].image %>' >
                 <% } else { %>
                     <span class="oi oi-plus"></span>
                 <% } %>
-                <div class='caption'>       
-                    <h4><%= gallery.title %></h4>
-                </div>
+                <p class='title'><%= gallery.title %></p>
+                <div class='overlay'></div>
                 </a>
             </div>
         </div>

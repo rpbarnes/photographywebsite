@@ -25,6 +25,7 @@
                     <div class='btn-group' role='group'>
                         <a href='#' class='btn likeComment'><span class='glyphicon glyphicon-thumbs-up'></span></a> 
                         <a href='#' class='btn likeComment'><span class='glyphicon glyphicon-comment'></span></a> 
+                        <a href='#' class='btn likeComment'><span class='glyphicon glyphicon-download-alt'></span></a> 
                         <% if (currentUser && (currentUser.role === 'admin')) { %>
                             <form class='deleteForm likeComment' action='/galleries/<%= gallery.id %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
                                 <button type='submit' class='btn deleteButton likeComment'><span class='glyphicon glyphicon-trash'></span></button>

@@ -60,3 +60,21 @@ div.addNew {
 	border: none;
 	outline: none;
 }
+
+.title {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 50px;
+  font-weight: 700;
+  font-size: 30px;
+  text-align: center;
+  text-transform: uppercase;
+  color: white;
+  z-index: 1;
+  transition: top .5s ease;
+}
+
+#imageContainer:hover .title {
+  top: 10px;
+}
