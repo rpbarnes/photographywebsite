@@ -4,9 +4,11 @@
     <header class='jumbotron'>
         <div class='container'>
             <h1><%= gallery.title %></h1>
-            <p>
-                <a class='btn btn-primary btn-lg' href='/galleries/<%= gallery._id %>/photos/new'>Add New Photos</a>
-            </p>
+            <% if (currentUser && (currentUser.role === 'admin')) { %>
+                <p>
+                    <a class='btn btn-primary btn-lg' href='/galleries/<%= gallery._id %>/photos/new'>Add New Photos</a>
+                </p>
+            <% } %>
         </div>
     </header>
 </div>
@@ -19,10 +21,17 @@
             <div id='imageContainer' class='thumbnail'>
                 <a href='<%= photo.image %>'>
                     <img id='<%= photo %>' src='<%= photo.image %>' >
+                    <div class="overlay"></div>
+                    <div class='btn-group' role='group'>
+                        <a href='#' class='btn likeComment'><span class='glyphicon glyphicon-thumbs-up'></span></a> 
+                        <a href='#' class='btn likeComment'><span class='glyphicon glyphicon-comment'></span></a> 
+                        <% if (currentUser && (currentUser.role === 'admin')) { %>
+                            <form class='deleteForm likeComment' action='/galleries/<%= gallery.id %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
+                                <button type='submit' class='btn deleteButton likeComment'><span class='glyphicon glyphicon-trash'></span></button>
+                            </form>
+                        <% } %>
+                    </div>
                 </a>
-                <form class='deleteForm' action='/galleries/<%= gallery.id %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
-                    <button class='btn btn-danger'>Delete</button>
-                </form>
             </div>
         </div>
         <% }) %>

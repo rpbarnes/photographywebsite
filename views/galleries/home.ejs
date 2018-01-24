@@ -3,9 +3,11 @@
     <header class='jumbotron'>
         <div class='container'>
             <h1>Galleries</h1>
+            <% if (currentUser && (currentUser.role === 'admin')) { %>
             <p>
                 <a class='btn btn-primary btn-lg' href='/galleries/new'>Add New Gallery</a>
             </p>
+            <% } %>
         </div>
     </header>
 </div>

@@ -8,6 +8,7 @@ var express 		= require('express'),
 	aws				= require('aws-sdk'),
     passport        = require('passport'), 
     localStrategy   = require('passport-local'), 
+	createAdmin		= require('./seeds');
     User            = require('./models/user'),
     path            = require('path'),
  	Photo 			= require('./models/photo'),
@@ -59,7 +60,9 @@ var upload = multer({
 })
 
 // setup db
-mongoose.connect("mongodb://localhost/photoV5");
+mongoose.connect("mongodb://localhost/photoV6");
+// create Admin account
+// createAdmin();
 
 //// Pass currentUser to each template
 app.use(function(req, res, next) {              // Define currentUser for each render call. This middleware function will be called for each render function.
@@ -125,6 +128,16 @@ checkGalleryOwnership = function(req, res, next) {
 			}
 		}
 	});
+};
+
+isAdmin = function(req, res, next) {
+	// user is logged in but are they admin? If yes continue, if not redirect back and flash message.
+	if (req.user.role === 'admin') {
+		next();
+	} else {
+		req.flash('error', "You are not an administrator and do not have permission to do that");
+		res.redirect('back');
+	}
 };
 
 
@@ -200,13 +213,13 @@ app.get('/galleries', function(req, res){
 });
 
 // new gallery 
-app.get('/galleries/new', isLoggedIn, function(req, res){
+app.get('/galleries/new', isLoggedIn, isAdmin, function(req, res){
 	res.render('./galleries/new'); 
 });
 
 // create gallery - when adding photos you can use findByIdAndUpdate to create a gallery if it doesn't already exist. 
 // You'll have to do this to work with dropzone
-app.post('/galleries', isLoggedIn, function(req, res){
+app.post('/galleries', isLoggedIn, isAdmin, function(req, res){
 	Gallery.create(req.body.gallery, function(err, gallery){
 		if (err) {
 			console.error(String(err));
@@ -235,7 +248,7 @@ app.get('/galleries/:gallId', function(req, res){
 // app.delete
 
 // new photo. This should check that the user owns the gallery. Same as with the post route.
-app.get('/galleries/:gallId/photos/new', isLoggedIn, checkGalleryOwnership, function(req, res){
+app.get('/galleries/:gallId/photos/new', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res){
 	Gallery.findById(req.params.gallId, function(err, gallery){
 		if (err) {
 			console.error(String(err));
@@ -245,7 +258,7 @@ app.get('/galleries/:gallId/photos/new', isLoggedIn, checkGalleryOwnership, func
 	});	
 });
 
-app.post('/galleries/:gallId/photos', isLoggedIn, checkGalleryOwnership, upload.any(), storePhotos, function(req, res){
+app.post('/galleries/:gallId/photos', isLoggedIn, isAdmin, checkGalleryOwnership, upload.any(), storePhotos, function(req, res){
 	console.log('photos stored');
 });
 
@@ -253,7 +266,7 @@ app.post('/galleries/:gallId/photos', isLoggedIn, checkGalleryOwnership, upload.
 // app.put
 
 // destroy photo user needs to own gallery before they can delete a photo.
-app.delete('/galleries/:gallId/photos/:photoId', isLoggedIn, checkGalleryOwnership, function(req, res){
+app.delete('/galleries/:gallId/photos/:photoId', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res){
 	Gallery.findById(req.params.gallId, function(err, gallery){
 		if (err || !gallery){
 			res.redirect('/galleries/');
