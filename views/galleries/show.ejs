@@ -10,9 +10,13 @@
         <div class='container'>
             <h1><%= gallery.title %></h1>
             <% if (currentUser && (currentUser.role === 'admin')) { %>
-                <p>
+                <div class='btn-group' role='group'>
                     <a class='btn btn-primary btn-lg' href='/galleries/<%= gallery._id %>/photos/new'>Add New Photos</a>
-                </p>
+                    <a class='btn btn-warning btn-lg' href='/galleries/<%= gallery._id %>/edit'>Edit Gallery</a>
+                    <form class='deleteForm' method='POST' action='/galleries/<%= gallery._id %>?_method=DELETE'>
+                        <button class='btn btn-danger btn-lg'>Delete Gallery</button>
+                    </form>
+                </div>
             <% } %>
         </div>
     </header>

@@ -6,6 +6,11 @@
     padding: 0;
 }
 
+#upload-widget {
+  width: 100%;
+  height: 100%;
+}
+
 h1.addNew {
   text-align: center;
 }
@@ -14,6 +19,11 @@ div.addNew {
   width: 30%; 
   margin: 30px auto;
 }
+
+form.dropzone {
+  border-style: dashed;
+}
+
 
 #imageContainer {
   cursor: pointer;

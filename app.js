@@ -140,6 +140,23 @@ isAdmin = function(req, res, next) {
 	}
 };
 
+removePhoto = function(photoId) {
+	// remove photo from S3 and photo collection
+	Photo.findByIdAndRemove(photoId, function(err, photo) {
+		if (err || !photo) {
+			console.error(String(err));
+		} else {
+			toDelete.Key = photo.key;
+			s3.deleteObject(toDelete, function(err, data){
+				if (err) {
+					console.error(String(err));
+				} else {
+					console.log('photo removed');
+				}
+			});
+		}
+	});
+}
 
 //////////////////////////////////////////
 ///////////// Authentication /////////////
@@ -242,10 +259,41 @@ app.get('/galleries/:gallId', function(req, res){
 });
 
 // update gallery
-// app.put
+app.get('/galleries/:gallId/edit', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res) {
+	Gallery.findById(req.params.gallId, function(err, gallery) {
+		res.render('./galleries/edit', {gallery: gallery});
+	});
+});
+
+app.put('/galleries/:gallId', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res) {
+	Gallery.findById(req.params.gallId, function(err, gallery){
+		if (err || !gallery) {
+			req.flash('error',"Can't find gallery");
+			res.redirect('/galleries');
+		} else {
+			gallery.title = req.body.gallery.title;
+			gallery.save()
+			req.flash('success', "Title changed.");
+			res.redirect('/galleries/'+gallery._id);
+		}
+	});
+});
 
 // destroy gallery
-// app.delete
+app.delete('/galleries/:gallId', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res) {
+	Gallery.findByIdAndRemove(req.params.gallId, function(err, gallery) {
+		if (err || !gallery) {
+			req.flash('error',"Can't remove gallery");
+			res.redirect('/galleries');
+		} else {
+			gallery.photos.forEach( function(photo) {
+				removePhoto(photo); // removes photo from both S3 and collection
+			});
+			req.flash('success','Gallery removed');
+			res.redirect('/galleries');
+		}
+	});
+});
 
 // new photo. This should check that the user owns the gallery. Same as with the post route.
 app.get('/galleries/:gallId/photos/new', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res){
@@ -283,22 +331,7 @@ app.delete('/galleries/:gallId/photos/:photoId', isLoggedIn, isAdmin, checkGalle
 			}
 		});
 	});
-	Photo.findByIdAndRemove(req.params.photoId, function(err, photo) {
-		if (err || !photo) {
-			console.error(String(err));
-		} else {
-			toDelete.Key = photo.key;
-			console.log(toDelete);
-			s3.deleteObject(toDelete, function(err, data){
-				if (err) {
-					console.error(String(err));
-				} else {
-					console.log('photo removed');
-				}
-
-			});
-		}
-	});
+	removePhoto(req.params.photoId);
 });
 
 // ajax post route for like photo
