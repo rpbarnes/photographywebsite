@@ -85,34 +85,6 @@ app.use(function(req, res, next) {              // Define currentUser for each r
 ////////////   middle ware   ////////////
 /////////////////////////////////////////
 
-storePhotos = function(req, res, next) {
-	Gallery.findById(req.params.gallId, function(err, gallery){
-		if (err) {
-			console.error(String(err));
-		} else {
-			req.files.forEach(function(photoObj, index, array) {
-				Photo.create({}, function(err, photo){
-					if (err) {
-						console.error(String(err));
-					} else {
-						photo.name = path.basename(photoObj.originalname);
-						photo.image = photoObj.location;
-						photo.key = photoObj.key;
-						photo.author = {username: req.user.username, id: req.user._id}
-						photo.save();
-						gallery.photos.push(photo._id);
-						if (index === (array.length - 1)) {
-							gallery.save();
-							res.status(200).end();
-						}
-					}
-				});
-			});
-		}
-	});
-	next();
-}
-
 // auth middleware - you could add a check for a user group here.
 isLoggedIn = function(req, res, next) {
 	if (req.isAuthenticated()) {
@@ -149,6 +121,34 @@ isAdmin = function(req, res, next) {
 		res.redirect('back');
 	}
 };
+
+storePhotos = function(req, res, next) {
+	Gallery.findById(req.params.gallId, function(err, gallery){
+		if (err) {
+			console.error(String(err));
+		} else {
+			req.files.forEach(function(photoObj, index, array) {
+				Photo.create({}, function(err, photo){
+					if (err) {
+						console.error(String(err));
+					} else {
+						photo.name = path.basename(photoObj.originalname);
+						photo.image = photoObj.location;
+						photo.key = photoObj.key;
+						photo.author = {username: req.user.username, id: req.user._id}
+						photo.save();
+						gallery.photos.push(photo._id);
+						if (index === (array.length - 1)) {
+							gallery.save();
+							res.status(200).end();
+						}
+					}
+				});
+			});
+		}
+	});
+	next();
+}
 
 removePhoto = function(photoId) {
 	// remove photo from S3 and photo collection
@@ -342,9 +342,6 @@ app.get('/galleries/:gallId/photos/new', isLoggedIn, isAdmin, checkGalleryOwners
 app.post('/galleries/:gallId/photos', isLoggedIn, isAdmin, checkGalleryOwnership, upload.any(), storePhotos, function(req, res){
 	console.log('photos stored');
 });
-
-// update photo
-// app.put
 
 // destroy photo user needs to own gallery before they can delete a photo.
 app.delete('/galleries/:gallId/photos/:photoId', isLoggedIn, isAdmin, checkGalleryOwnership, function(req, res){
