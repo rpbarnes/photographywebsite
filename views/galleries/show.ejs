@@ -1,4 +1,9 @@
 <% include ../partials/header %>
+<script src="/js/lightgallery.js"></script>
+<script src="/js/lg-thumbnail.js"></script>
+<script src="/js/lg-fullscreen.js"></script>
+<script src="/js/lg-autoplay.js"></script>
+<script src="/js/lg-share.js"></script>
 
 <div class='container'>
     <header class='jumbotron'>
@@ -15,30 +20,32 @@
 
 
 <div class='container'>
-    <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
-        <% gallery.photos.forEach( function(photo) { %>
-        <div class='col-md-3 col-sm-6'>
-            <div id='imageContainer' class='thumbnail'>
-                <a href='<%= photo.image %>'>
-                    <img id='<%= photo._id %>' src='<%= photo.image %>' >
-                    <div class="overlay"></div>
-                </a>
-                
-                <div class='btn-group btn-photo-grp' role='group'>
-                    <button id=<%= photo._id %> class='btn likeComment like'><p class='likeComment' id='like<%=photo._id%>'><%= photo.likes.length %> </p><span class='glyphicon glyphicon-thumbs-up'></span></button> 
-                    <button id=<%= photo._id %> class='btn likeComment download'><span class='glyphicon glyphicon-download-alt'></span></button> 
-                    <% if (currentUser && (currentUser.role === 'admin')) { %>
-                        <form class='deleteForm likeComment' action='/galleries/<%= gallery.id %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
-                            <button type='submit' class='btn deleteButton likeComment'><span class='glyphicon glyphicon-trash'></span></button>
-                        </form>
-                    <% } %>
+    <div id='lightgallery'>
+        <div class='row text-center' style='display:flex; flex-wrap:wrap;'>
+            <% gallery.photos.forEach( function(photo) { %>
+            <div class='col-md-3 col-sm-6'>
+                <div id='imageContainer' class='thumbnail'>
+                    <a href='<%= photo.image %>' class='image-wrapper'>
+                        <img id='<%= photo._id %>' src='<%= photo.image %>' >
+                        <div class="overlay"></div>
+                    </a>
+                    <div class='btn-group btn-photo-grp' role='group'>
+                        <button id=<%= photo._id %> class='btn likeComment like'><p class='likeComment' id='like<%=photo._id%>'><%= photo.likes.length %> </p><span class='glyphicon glyphicon-thumbs-up'></span></button> 
+                        <a href='<%= photo.image %>' download id=<%= photo._id %> class='btn likeComment download'><span class='glyphicon glyphicon-download-alt'></span></a> 
+                        <% if (currentUser && (currentUser.role === 'admin')) { %>
+                            <form class='deleteForm likeComment' action='/galleries/<%= gallery.id %>/photos/<%= photo._id %>?_method=DELETE' method='POST'>
+                                <button type='submit' class='btn deleteButton likeComment'><span class='glyphicon glyphicon-trash'></span></button>
+                            </form>
+                        <% } %>
+                    </div>
                 </div>
             </div>
+            <% }) %>
         </div>
-        <% }) %>
     </div>
 </div>  
 
 <script src="/js/setLikeComment.js"></script>
+<script src="/js/lightGalleryInitialize.js"></script>
 
 <% include ../partials/footer %>
