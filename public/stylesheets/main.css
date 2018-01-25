@@ -24,6 +24,12 @@ form.dropzone {
   border-style: dashed;
 }
 
+.introContainer h1,
+.introContainer a {
+  display: inline;
+  vertical-align: top;
+
+}
 
 #imageContainer {
   cursor: pointer;
@@ -34,6 +40,12 @@ form.dropzone {
   cursor: pointer;
   opacity: 0;
   color: white;
+  background-color: Transparent;
+}
+
+.titleButton {
+  cursor: pointer;
+  color: black;
   background-color: Transparent;
 }
 

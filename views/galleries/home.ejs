@@ -1,12 +1,10 @@
 <% include ../partials/header %>
 <div class='container'>
     <header class='jumbotron'>
-        <div class='container'>
+        <div class='container introContainer'>
             <h1>Galleries</h1>
             <% if (currentUser && (currentUser.role === 'admin')) { %>
-            <p>
-                <a class='btn btn-primary btn-lg' href='/galleries/new'>Add New Gallery</a>
-            </p>
+            <a class='btn titleButton' data-toggle='tooltip' title='Add new gallery' href='/galleries/new'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span></a>
             <% } %>
         </div>
     </header>
