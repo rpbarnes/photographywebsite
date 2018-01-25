@@ -1,26 +1,28 @@
 var mongoose = require('mongoose');
 
 var photoSchema = mongoose.Schema({
-	image: {	// this is in place of an actual file held on S3		
-		type: String,
-	},
-	thumbnail: { // filename placeholder for thumbnail file
-		type: String,
-	},
-	key: {
-		type: String,
-	},
-	name: {
-		type: String,
-	},
+	image: { type: String },
+
+	thumbnail: { type: String },
+
+	key: { type: String },
+
+	date: { type: Date, default: Date.now },
+
+	name: { type: String },
+
+	likes: [
+		{ type: mongoose.Schema.Types.ObjectId, ref: "User" }
+	],	
+
+	comments: [
+		{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }
+	],
+
     author: {
-        id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        },
-        username: {
-            type: String
-        }
+        id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+        username: { type: String }
     }
 });
 

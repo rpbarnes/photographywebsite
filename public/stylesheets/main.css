@@ -7,23 +7,28 @@
 }
 
 h1.addNew {
-	text-align: center;
+  text-align: center;
 }
 
 div.addNew {
-	width: 30%; 
-	margin: 30px auto;
+  width: 30%; 
+  margin: 30px auto;
 }
 
 #imageContainer {
-	cursor: pointer;
-	position: relative;
+  cursor: pointer;
+  position: relative;
 }
 
 .likeComment {
-	cursor: pointer;
-	opacity: 0;
-	color: white;
+  cursor: pointer;
+  opacity: 0;
+  color: white;
+  background-color: Transparent;
+}
+
+p.likeComment {
+  display: inline;
 }
 
 .overlay {
@@ -42,24 +47,25 @@ div.addNew {
 }
 
 #imageContainer:hover .likeComment {
-	opacity: 1;
+  opacity: 1;
 }
 
 #imageContainer .btn-group {
-	position: absolute;
-	bottom: 10px;
-	right: 10px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 
 .deleteForm {
-	display: inline;
+  display: inline;
 }
 
 .deleteButton {
-	background-color: Transparent;
-	border: none;
-	outline: none;
+  background-color: Transparent;
+  border: none;
+  outline: none;
 }
+
 
 .title {
   position: absolute;
