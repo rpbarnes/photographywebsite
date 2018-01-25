@@ -6,6 +6,7 @@ var express 		= require('express'),
  	multer    		= require( 'multer' ),
  	multerS3  		= require( 'multer-s3' ),
 	aws				= require('aws-sdk'),
+	nodemailer		= require('nodemailer'),
     passport        = require('passport'), 
     localStrategy   = require('passport-local'), 
 	createAdmin		= require('./seeds');
@@ -15,6 +16,15 @@ var express 		= require('express'),
  	Gallery 		= require('./models/gallery');
 
 require( 'string.prototype.startswith' );
+
+// configure node mailer - This needs to go to env
+var transporter = nodemailer.createTransport({
+	service: 'gmail',
+	auth: {
+		user: process.env.EMAIL,
+		pass: process.env.PASSWORD 
+	}
+});
 
 // define app
 var app = express();
@@ -210,6 +220,29 @@ app.get('/logout', function(req, res){
 // landing page
 app.get('/',function(req,res){
 	res.render('landing');
+});
+
+// Contact page
+app.get('/contact', function(req, res) {
+	res.render('contact');
+});
+
+app.post('/contact', function(req, res) {
+	var mailOptions = {
+		from: process.env.EMAIL,
+		to: 'rpbarnes9@gmail.com',
+		subject: "Email from " + req.body.name,
+		text: "Message from " + req.body.name + ". Saying: " + req.body.message + ". Their email address is: " + req.body.email
+	};
+	transporter.sendMail(mailOptions, function(err, info) {
+		if (err) {
+			req.flash('error', "Couldn't send email.");
+			res.redirect('/galleries');
+		} else {
+			req.flash('success', "Thank you for contacting me!");
+			res.redirect('/galleries');
+		}
+	});
 });
 
 // user profile page - I'm not really sure what goes here.
