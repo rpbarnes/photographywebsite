@@ -74,7 +74,7 @@ var upload = multer({
 //mongoose.connect(process.env.PHOTODATABASEURL);
 mongoose.connect('mongodb://rpbarnes9:Chemi%24try1@ds111568.mlab.com:11568/rbphotography');
 // create Admin account
-createAdmin();
+// createAdmin();
 
 //// Pass currentUser to each template
 app.use(function(req, res, next) {              // Define currentUser for each render call. This middleware function will be called for each render function.
