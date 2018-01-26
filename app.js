@@ -70,9 +70,11 @@ var upload = multer({
 })
 
 // setup db
-mongoose.connect(process.env.PHOTODATABASEURL, {useMongoClient: true});
+// mongodb://rpbarnes9:Chemi$try1@ds111568.mlab.com:11568/rbphotography)
+//mongoose.connect(process.env.PHOTODATABASEURL);
+mongoose.connect('mongodb://rpbarnes9:Chemi%24try1@ds111568.mlab.com:11568/rbphotography');
 // create Admin account
-// createAdmin();
+createAdmin();
 
 //// Pass currentUser to each template
 app.use(function(req, res, next) {              // Define currentUser for each render call. This middleware function will be called for each render function.
@@ -236,7 +238,7 @@ app.post('/contact', function(req, res) {
 	};
 	transporter.sendMail(mailOptions, function(err, info) {
 		if (err) {
-			req.flash('error', "Couldn't send email.");
+			req.flash('error', String(err));
 			res.redirect('/galleries');
 		} else {
 			req.flash('success', "Thank you for contacting me!");
