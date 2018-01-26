@@ -59,9 +59,9 @@ app.get('/',function(req,res){
 app.use(photoRoutes);
 app.use(galleryRoutes);
 app.use(authRoutes);
-app.use(ajaxRoutes);
 app.use(contactRoutes);
 app.use(profileRoutes);
+app.use(ajaxRoutes);
 
 
 app.listen(process.env.PORT, process.env.IP, function(){

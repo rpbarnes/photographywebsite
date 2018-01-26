@@ -1,16 +1,12 @@
 var express 		= require('express');
-var nodemailer		= require('nodemailer');
 var router 			= express.Router({mergeParams: true});
+var helper 			= require('sendgrid').mail;
+var sg = require('sendgrid')(process.env.SENDGRID_API_KEY);
 
-// configure node mailer - This needs to go to env
-// This doesn't work for heroku. You'll need to reconfigure this.
-var transporter = nodemailer.createTransport({
-	service: 'gmail',
-	auth: {
-		user: process.env.EMAIL,
-		pass: process.env.PASSWORD 
-	}
-});
+var fromEmail = new helper.Email('contact@ryanbarnesphoto.com');
+var toEmail = new helper.Email('rpbarnes9@gmail.com');
+
+
 
 // Contact page
 router.get('/contact', function(req, res) {
@@ -18,13 +14,15 @@ router.get('/contact', function(req, res) {
 });
 
 router.post('/contact', function(req, res) {
-	var mailOptions = {
-		from: process.env.EMAIL,
-		to: 'rpbarnes9@gmail.com',
-		subject: "Email from " + req.body.name,
-		text: "Message from " + req.body.name + ". Saying: " + req.body.message + ". Their email address is: " + req.body.email
-	};
-	transporter.sendMail(mailOptions, function(err, info) {
+	var subject = 'Mail from ' + req.body.name;
+	var content = new helper.Content('text/plain', req.body.message + " Email: " + req.body.email);
+	var mail = new helper.Mail(fromEmail, subject, toEmail, content);
+	var request = sg.emptyRequest({
+		method: 'POST',
+		path: '/v3/mail/send', // wtf is this???
+		body: mail.toJSON(),
+	});
+	sg.API(request, function(err, response) {
 		if (err) {
 			req.flash('error', String(err));
 			res.redirect('/galleries');
