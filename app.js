@@ -70,7 +70,7 @@ var upload = multer({
 })
 
 // setup db
-mongoose.connect("mongodb://localhost/photoV6");
+mongoose.connect(process.env.PHOTODATABASEURL, {useMongoClient: true});
 // create Admin account
 // createAdmin();
 
