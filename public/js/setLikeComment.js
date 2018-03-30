@@ -11,7 +11,7 @@ like.click( function(event) {
 				$('#like'+data.id).html(data.numLikes);
 			} else {
 				console.log('You must log in!');
-				location.href = 'http://localhost:8000/login';
+				location.href = 'http://www.ryanbarnesphoto.com/login';
 			}
         },
         error: function(jqXHR, textstatus, errorThrown) {
